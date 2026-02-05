@@ -7,6 +7,7 @@ Rich-based TUI with ASCII banner and menu system.
 import os
 import sys
 import re
+import subprocess
 from typing import Optional, List
 
 try:
@@ -25,6 +26,40 @@ from .config import TunnelConfig, ConfigManager
 
 
 console = Console()
+
+
+def get_local_ip() -> Optional[str]:
+    """Auto-detect the server's primary IP address."""
+    try:
+        # Method 1: Get IP from default route interface
+        result = subprocess.run(
+            "ip route get 8.8.8.8 | grep -oP 'src \\K[0-9.]+'",
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            ip = result.stdout.strip()
+            if is_valid_ip(ip):
+                return ip
+        
+        # Method 2: Fallback to hostname -I
+        result = subprocess.run(
+            "hostname -I | awk '{print $1}'",
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            ip = result.stdout.strip()
+            if is_valid_ip(ip):
+                return ip
+    except Exception:
+        pass
+    
+    return None
 
 
 def is_valid_ip(ip: str) -> bool:
@@ -264,8 +299,14 @@ def prompt_tunnel_config(config: TunnelConfig, side: str, manager: ConfigManager
         default_session_id = 20
         default_peer_session_id = 10
     
-    # Local IP (with validation)
-    default_local = config.local_ip or ""
+    # Local IP (with validation and auto-detection)
+    detected_ip = get_local_ip()
+    if detected_ip:
+        console.print(f"[dim]Detected server IP: [green]{detected_ip}[/][/]")
+        default_local = config.local_ip or detected_ip
+    else:
+        default_local = config.local_ip or ""
+    
     local_ip = prompt_valid_ip(
         "[bold green]Local Server Public IP[/] (this server)",
         default=default_local if default_local else None,
