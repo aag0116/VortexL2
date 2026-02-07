@@ -122,7 +122,7 @@ def show_banner():
     
     # Developer info bar
     console.print(Panel(
-        f"[bold white]Telegram:[/] [cyan]@iliyadevsh[/]  |  [bold white]Version:[/] [red]{__version__}[/]  |  [bold white]GitHub:[/] [cyan]github.com/iliya-Developer[/]",
+        f"[bold white]Telegram:[/] [cyan]@iliyadevsh[/]  |  [bold white]Version:[/] [red]{__version__}[/]  |  [bold white]GitHub:[/] [cyan]github.com/aag0116[/]",
         title="[bold white]VortexL2 - L2TPv3 Tunnel Manager[/]",
         border_style="cyan",
         box=box.ROUNDED
